@@ -1,5 +1,14 @@
+from fastapi import FastAPI
 import re, asyncio
 from playwright.async_api import async_playwright
+
+app = FastAPI(title="Facebook Ads Library Scraper API")
+
+
+@app.get("/")
+def root():
+    return {"message": "✅ Facebook Ads Library Scraper API is running"}
+
 
 async def scrape_results(domain: str):
     url = (
@@ -15,8 +24,7 @@ async def scrape_results(domain: str):
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto(url, wait_until="networkidle", timeout=90000)
-        await asyncio.sleep(8)  # Wait for full JS render like Colab
-
+        await asyncio.sleep(8)  # wait for JS render
         html = await page.content()
         await browser.close()
 
@@ -25,3 +33,18 @@ async def scrape_results(domain: str):
         return {"domain": domain, "results": int(match.group(1))}
     else:
         return {"domain": domain, "results": 0, "note": "No visible results or blocked"}
+
+
+@app.get("/check_ads")
+async def check_ads(domain: str):
+    return await scrape_results(domain)
+
+
+@app.get("/debug")
+async def debug():
+    from playwright.async_api import async_playwright
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        version = await browser.version()
+        await browser.close()
+    return {"chromium_version": version, "status": "Playwright OK"}
