@@ -1,4 +1,4 @@
 fastapi
 uvicorn
-playwright
+playwright==1.45.0
 nest_asyncio
